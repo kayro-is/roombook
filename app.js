@@ -6,7 +6,11 @@ const cors = require('cors');
 
 app.use(
   cors({
-    origin: 'https://roombook-amak.vercel.app/',
+    origin: [
+      "http://localhost:5173",
+      "https://roombook-amk.vercel.app"
+    ],
+    credentials: true,
   })
 );
 
