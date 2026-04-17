@@ -8,7 +8,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://roombook-amk.vercel.app"
+      "https://roombook-amak.vercel.app"
     ],
     credentials: true,
   })
