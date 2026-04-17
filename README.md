@@ -98,5 +98,5 @@ Les routes API ont été testées avec **Postman**.
 
 ### 1. Cloner le projet
 ```bash
-git clone https://github.com/ton-username/roombook.git
+git clone https://github.com/kayro-is/roombook.git
 cd roombook
