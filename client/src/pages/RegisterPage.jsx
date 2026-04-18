@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import api from "../services/api";
+import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import {Eye, EyeOff, Lock, ShieldCheck, Zap} from "lucide-react";
 
@@ -138,7 +138,7 @@ function RegisterPage() {
         mot_de_passe: formData.mot_de_passe,
       };
 
-      const response = await api.post("/utilisateur/", payload);
+      const response = await axios.post("http://localhost:3000/utilisateur/", payload);
 
       setMessage(response.data.message || "Compte créé avec succès.");
 
