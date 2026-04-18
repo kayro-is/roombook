@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://roombook-bd.vercel.app/",
+  baseURL: "https://roombook-bd.vercel.app",
 });
 
 api.interceptors.request.use((config) => {
