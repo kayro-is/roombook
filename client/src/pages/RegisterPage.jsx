@@ -138,7 +138,7 @@ function RegisterPage() {
         mot_de_passe: formData.mot_de_passe,
       };
 
-      const response = await axios.post("http://localhost:3000/utilisateur/", payload);
+      const response = await axios.post("https://roombook-bd.vercel.app/utilisateur/", payload);
 
       setMessage(response.data.message || "Compte créé avec succès.");
 
