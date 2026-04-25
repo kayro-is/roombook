@@ -158,9 +158,7 @@ function LoginPage() {
                   <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                     Mot de passe
                   </label>
-                  <span className="text-sm text-slate-600">
-                    Fonction à venir
-                  </span>
+                  
                 </div>
 
                 <input
@@ -187,34 +185,6 @@ function LoginPage() {
                 {loading ? "Connexion..." : "Se connecter →"}
               </button>
             </form>
-
-            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() =>
-                  setFormData({
-                    email: "admin@test.com",
-                    mot_de_passe: "123456",
-                  })
-                }
-                className="rounded-xl border border-cyan-400/10 bg-transparent px-4 py-3 text-sm font-medium text-slate-300 transition hover:border-cyan-400/40 hover:text-white"
-              >
-                ⚡ Admin demo
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setFormData({
-                    email: "test@test.com",
-                    mot_de_passe: "123456",
-                  })
-                }
-                className="rounded-xl border border-cyan-400/10 bg-transparent px-4 py-3 text-sm font-medium text-slate-300 transition hover:border-cyan-400/40 hover:text-white"
-              >
-                👤 User demo
-              </button>
-            </div>
 
             <div className="my-8 flex items-center gap-4">
               <div className="h-px flex-1 bg-slate-800"></div>

@@ -32,6 +32,16 @@ app.use((req, res) => {
   res.status(404).send('Page non trouvée');
 });
 
+const PORT = process.env.PORT || 3000;
+
+// Si on est en local, on démarre le serveur
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`Serveur démarré sur le port ${PORT}`);
+  });
+}
+
+
 
 
 module.exports = app;

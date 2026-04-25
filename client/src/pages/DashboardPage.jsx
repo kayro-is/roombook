@@ -18,6 +18,13 @@ import {
   Plus,
 } from "lucide-react";
 
+const BOOKING_COLORS = [
+  "from-cyan-400 to-blue-500",
+  "from-cyan-400 to-teal-500",
+  "from-orange-400 to-red-500",
+  "from-cyan-400 to-indigo-500",
+];
+
 function DashboardPage() {
   const [salles, setSalles] = useState([]);
   const [utilisateurs, setUtilisateurs] = useState([]);
@@ -42,9 +49,11 @@ function DashboardPage() {
           api.get("/reservation"),
         ]);
 
-        setSalles(sallesRes.data || []);
-        setUtilisateurs(usersRes.data || []);
-        setReservations(reservationsRes.data || []);
+        setSalles(Array.isArray(sallesRes.data) ? sallesRes.data : []);
+        setUtilisateurs(Array.isArray(usersRes.data) ? usersRes.data : []);
+        setReservations(
+          Array.isArray(reservationsRes.data) ? reservationsRes.data : []
+        );
       } catch (err) {
         console.error("Erreur dashboard :", err);
         setError("Erreur lors du chargement du dashboard.");
@@ -56,14 +65,9 @@ function DashboardPage() {
     fetchDashboardData();
   }, []);
 
-  const sallesValides = useMemo(() => {
-    return salles.filter(
-      (salle) =>
-        salle.nom_salle !== null &&
-        salle.capacite !== null &&
-        salle.localisation !== null
-    );
-  }, [salles]);
+  const sallesValides = salles.filter(
+    (salle) => salle.nom_salle && salle.capacite && salle.localisation
+  );
 
   const filteredSalles = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -83,120 +87,108 @@ function DashboardPage() {
     });
   }, [sallesValides, searchTerm]);
 
-  const stats = useMemo(() => {
-    const totalSalles = sallesValides.length;
-    const totalUtilisateurs = utilisateurs.length;
-    const totalReservations = reservations.length;
-    const totalAdmins = utilisateurs.filter(
-      (utilisateur) => utilisateur.role === "admin"
-    ).length;
+  const totalSalles = sallesValides.length;
+  const totalUtilisateurs = utilisateurs.length;
+  const totalAdmins = utilisateurs.filter(
+    (utilisateur) => utilisateur.role === "admin"
+  ).length;
+  const totalUsers = Math.max(totalUtilisateurs - totalAdmins, 0);
 
-    const sallesOccupees = Math.min(totalReservations, totalSalles);
-    const sallesLibres = Math.max(totalSalles - sallesOccupees, 0);
+  const sallesOccupees = new Set(
+    reservations
+      .filter((reservation) => reservation.nom_salle)
+      .map((reservation) => reservation.nom_salle)
+  ).size;
 
-    const occupation =
-      totalSalles > 0 ? Math.round((sallesOccupees / totalSalles) * 100) : 0;
+  const sallesLibres = Math.max(totalSalles - sallesOccupees, 0);
 
-    return [
-      {
-        title: "Salles",
-        value: String(totalSalles),
-        subtitle: `${sallesLibres} libres · ${sallesOccupees} occupées`,
-        icon: <DoorOpen size={18} className="text-orange-300" />,
-        valueColor: "text-cyan-400",
-      },
-      {
-        title: "Utilisateurs",
-        value: String(totalUtilisateurs),
-        subtitle: `${totalReservations} réservations · ${totalAdmins} admins`,
-        icon: <Users size={18} className="text-violet-300" />,
-        valueColor: "text-emerald-400",
-      },
-      {
-        title: "Occupation globale",
-        value: `${occupation}%`,
-        subtitle: "Calcul basé sur les réservations",
-        icon: <Power size={18} className="text-red-200" />,
-        valueColor: "text-orange-400",
-      },
-    ];
-  }, [sallesValides, utilisateurs, reservations]);
+  const occupation =
+    totalSalles > 0 ? Math.round((sallesOccupees / totalSalles) * 100) : 0;
 
-  const liveOccupation = useMemo(() => {
-    if (filteredSalles.length === 0) return [];
+  const stats = [
+    {
+      title: "Salles",
+      value: String(totalSalles),
+      subtitle: `${sallesLibres} libres · ${sallesOccupees} occupées`,
+      icon: <DoorOpen size={18} className="text-orange-300" />,
+      valueColor: "text-cyan-400",
+    },
+    {
+      title: "Utilisateurs",
+      value: String(totalUtilisateurs),
+      subtitle: `${totalUsers} utilisateurs · ${totalAdmins} admins`,
+      icon: <Users size={18} className="text-violet-300" />,
+      valueColor: "text-emerald-400",
+    },
+    {
+      title: "Occupation",
+      value: `${occupation}%`,
+      subtitle: "Taux d'occupation des salles",
+      icon: <Power size={18} className="text-red-200" />,
+      valueColor: "text-orange-400",
+    },
+  ];
 
-    return filteredSalles.slice(0, 4).map((salle) => {
-      const reservationTrouvee = reservations.find(
-        (reservation) => reservation.nom_salle === salle.nom_salle
-      );
+  const liveOccupation = filteredSalles.slice(0, 4).map((salle) => {
+    const reservationTrouvee = reservations.find(
+      (reservation) => reservation.nom_salle === salle.nom_salle
+    );
 
-      return {
-        name: salle.nom_salle,
-        percent: reservationTrouvee ? 100 : 25,
-        color: reservationTrouvee ? "bg-pink-500" : "bg-emerald-400",
-      };
-    });
-  }, [filteredSalles, reservations]);
+    return {
+      name: salle.nom_salle,
+      percent: reservationTrouvee ? 100 : 25,
+      color: reservationTrouvee ? "bg-pink-500" : "bg-emerald-400",
+    };
+  });
 
-  const rooms = useMemo(() => {
-    return filteredSalles.map((salle) => {
-      const reservationTrouvee = reservations.find(
-        (reservation) => reservation.nom_salle === salle.nom_salle
-      );
+  const rooms = filteredSalles.map((salle) => {
+    const reservationTrouvee = reservations.find(
+      (reservation) => reservation.nom_salle === salle.nom_salle
+    );
 
-      let statut = "LIBRE";
-      let statutColor =
-        "bg-emerald-500/15 text-emerald-400 border-emerald-400/20";
+    let statut = "LIBRE";
+    let statutColor =
+      "bg-emerald-500/15 text-emerald-400 border-emerald-400/20";
 
-      if (reservationTrouvee) {
-        const statutReservation = reservationTrouvee.statut?.toLowerCase();
+    if (reservationTrouvee) {
+      const statutReservation = reservationTrouvee.statut?.toLowerCase();
 
-        if (
-          statutReservation === "confirmée" ||
-          statutReservation === "confirmee"
-        ) {
-          statut = "OCCUPÉE";
-          statutColor = "bg-red-500/15 text-red-400 border-red-400/20";
-        } else {
-          statut = "BIENTÔT";
-          statutColor = "bg-orange-500/15 text-orange-400 border-orange-400/20";
-        }
+      if (
+        statutReservation === "confirmée" ||
+        statutReservation === "confirmee"
+      ) {
+        statut = "OCCUPÉE";
+        statutColor = "bg-red-500/15 text-red-400 border-red-400/20";
+      } else {
+        statut = "BIENTÔT";
+        statutColor = "bg-orange-500/15 text-orange-400 border-orange-400/20";
       }
+    }
 
-      return {
-        id: salle.id_salle,
-        name: salle.nom_salle || `Salle ${salle.id_salle}`,
-        code: `S${salle.id_salle}`,
-        cap: salle.capacite ? `${salle.capacite} p.` : "-",
-        etage: salle.localisation || "-",
-        statut,
-        statutColor,
-      };
-    });
-  }, [filteredSalles, reservations]);
+    return {
+      id: salle.id_salle,
+      name: salle.nom_salle || `Salle ${salle.id_salle}`,
+      code: `S${salle.id_salle}`,
+      cap: salle.capacite ? `${salle.capacite} p.` : "-",
+      etage: salle.localisation || "-",
+      statut,
+      statutColor,
+    };
+  });
 
-  const todayBookings = useMemo(() => {
-  const today = new Date();
-  const todayString = today.toLocaleDateString("fr-CA"); // format YYYY-MM-DD
-
-  return reservations
+  const todayBookings = reservations
     .filter((reservation) => {
       if (!reservation.date_reservation) return false;
 
-      const reservationDate = new Date(reservation.date_reservation);
-      const reservationDateString = reservationDate.toLocaleDateString("fr-CA");
+      const today = new Date().toLocaleDateString("fr-CA");
+      const reservationDate = new Date(
+        reservation.date_reservation
+      ).toLocaleDateString("fr-CA");
 
-      return reservationDateString === todayString;
+      return reservationDate === today;
     })
     .slice(0, 4)
     .map((reservation, index) => {
-      const couleurs = [
-        "from-cyan-400 to-blue-500",
-        "from-cyan-400 to-teal-500",
-        "from-orange-400 to-red-500",
-        "from-cyan-400 to-indigo-500",
-      ];
-
       const prenom = reservation.prenom || "";
       const nom = reservation.nom || "";
       const initials = `${prenom[0] || ""}${nom[0] || ""}`.toUpperCase();
@@ -209,14 +201,13 @@ function DashboardPage() {
             : "Créneau réservé",
         person: `${prenom} ${nom}`.trim() || "Utilisateur",
         initials: initials || "RS",
-        color: couleurs[index] || "from-cyan-400 to-blue-500",
+        color: BOOKING_COLORS[index] || "from-cyan-400 to-blue-500",
       };
     });
-}, [reservations]);
 
   if (loading) {
     return (
-      <div className="flex min-h-screen mt-10 items-center justify-center bg-[#030817] text-white">
+      <div className="mt-10 flex min-h-screen items-center justify-center bg-[#030817] text-white">
         <div className="rounded-2xl border border-cyan-400/10 bg-[#0b1220]/80 px-6 py-4 text-cyan-400">
           Chargement du dashboard...
         </div>
@@ -259,7 +250,7 @@ function DashboardPage() {
                     className="flex h-10 items-center gap-2 rounded-lg border border-cyan-400/10 bg-white px-3 text-sm font-semibold text-slate-800 transition hover:scale-[1.02]"
                   >
                     <Zap size={14} className="text-orange-500" />
-                    Admin
+                    Utilisateurs
                   </button>
                 )}
 

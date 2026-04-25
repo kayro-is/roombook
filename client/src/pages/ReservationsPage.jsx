@@ -227,7 +227,7 @@ function ReservationsPage() {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-cyan-400">
                   Réservations
                 </p>
-                <h1 className="mt-2 text-3xl font-bold text-white">
+                <h1 className="mt-15 text-3xl font-bold text-white">
                   Gestion des réservations
                 </h1>
               </div>
@@ -247,11 +247,7 @@ function ReservationsPage() {
               </div>
             )}
 
-            {error && (
-              <div className="mb-5 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                {error}
-              </div>
-            )}
+            
 
             <div className="mb-5 grid gap-4 md:grid-cols-3">
               <InfoCard
@@ -417,7 +413,16 @@ function ReservationsPage() {
               >
                 ✕
               </button>
+              
             </div>
+
+              {error && (
+    <div className="mb-5 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+      {error}
+    </div>
+  )}
+
+
 
             <div className="grid gap-5 md:grid-cols-2">
               <FormField label="Date">

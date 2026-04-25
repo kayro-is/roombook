@@ -5,9 +5,20 @@ import { Shield, Mail, KeyRound, BadgeCheck } from "lucide-react";
 function ProfilePage() {
   const user = getUserFromToken();
 
-  const displayName = user?.email || "Utilisateur";
-  const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : "US";
+  const displayName =
+    user?.prenom && user?.nom
+      ? `${user.prenom} ${user.nom}`
+      : user?.email || "Utilisateur";
+
+  const initials =
+    user?.prenom && user?.nom
+      ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase()
+      : user?.email
+        ? user.email.slice(0, 2).toUpperCase()
+        : "US";
+
   const role = user?.role || "user";
+  const formattedRole = role === "admin" ? "Administrateur" : "Utilisateur";
 
   return (
     <div className="min-h-screen bg-[#030817] text-white">
@@ -33,7 +44,9 @@ function ProfilePage() {
 
                 <div>
                   <p className="text-2xl font-bold text-white">{displayName}</p>
-                  <p className="text-slate-400">{role}</p>
+                  <span className="mt-2 inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-sm text-cyan-300">
+                    {formattedRole}
+                  </span>
                 </div>
               </div>
 
@@ -51,7 +64,7 @@ function ProfilePage() {
                 <ProfileItem
                   icon={<Shield size={18} className="text-orange-400" />}
                   label="Rôle"
-                  value={role}
+                  value={formattedRole}
                 />
                 <ProfileItem
                   icon={<BadgeCheck size={18} className="text-emerald-400" />}
@@ -60,7 +73,6 @@ function ProfilePage() {
                 />
               </div>
             </div>
-
           </div>
         </main>
       </div>
